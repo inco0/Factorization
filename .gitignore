@@ -25,6 +25,12 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+*.xml
+*.pyi
+*.exe
+*.html
+*.iml
+*.idea/
 MANIFEST
 
 # PyInstaller

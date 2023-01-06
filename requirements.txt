@@ -1,0 +1,7 @@
+coloredlogs==15.0.1
+Cython==0.29.33
+cythonbuilder==0.1.13
+gmpy2==2.1.5
+humanfriendly==10.0
+pydevd-pycharm==221.5921.27
+pyreadline3==3.4.1

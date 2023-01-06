@@ -1,0 +1,27 @@
+from __future__ import print_function
+import sys
+from math import sqrt
+from gmpy2 import mpz
+import cython
+
+cpdef factorize(number_factorized):
+    # import pydevd_pycharm
+    # pydevd_pycharm.settrace('localhost', port=40050, stdoutToServer=True, stderrToServer=True)
+    current_number = number_factorized
+    cdef int prime = 2
+    divisors: [int] = []
+
+    while prime <= sqrt(number_factorized):
+        if current_number % prime == 0:
+            divisors.append(prime)
+            current_number //= prime
+        else:
+            prime += 1
+    if current_number == number_factorized:
+        divisors.append(current_number)
+    elif current_number > 1:
+        divisors.append(current_number)
+
+    print(f'The divisors of {number_factorized} are: ', end='')
+    for divisor in divisors:
+        print(divisor, end=' ')
