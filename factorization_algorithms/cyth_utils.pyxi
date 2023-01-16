@@ -1,0 +1,9 @@
+from gmpy2 cimport *
+import os
+import sys
+def extern from "gmp.h":
+    ...
+def get_big_cython_int(int:n:):
+    ...
+def sa():
+    ...

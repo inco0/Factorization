@@ -23,4 +23,4 @@ cpdef factorize(composite_number):
 
     print(f'The divisors of {composite_number} are:', end=' ')
     for divisor in divisors:
-        print(f'divisor', end=' ')
+        print(f'Divisor', end=' ')

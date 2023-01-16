@@ -1,4 +1,4 @@
-from factorization_algorithms import trial_division, fermat_square_difference
+from factorization_algorithms import trial_division, fermat_square_difference, cython_utils
 from gmpy2 import mpz
 
 # trial_division.factorize(482237)
