@@ -1,5 +1,4 @@
 from __future__ import print_function
-import sys
 from math import sqrt
 from gmpy2 import mpz
 import cython
@@ -22,6 +21,6 @@ cpdef factorize(composite_number):
     elif current_number > 1:
         divisors.append(current_number)
 
-    print(f'The divisors of {composite_number} are: ', end='')
+    print(f'The divisors of {composite_number} are:', end=' ')
     for divisor in divisors:
-        print(divisor, end=' ')
+        print(f'divisor', end=' ')
