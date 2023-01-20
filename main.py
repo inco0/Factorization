@@ -1,5 +1,4 @@
 from factorization_algorithms import trial_division, fermat_square_difference, cython_utils
-from gmpy2 import mpz
 
-# trial_division.factorize(482237)
-fermat_square_difference.factorize(71641520761751435455133616475667090434063332228247871795429)
+
+fermat_square_difference.factorize(8737377337727377878323)

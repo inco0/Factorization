@@ -1,4 +1,4 @@
-from __future__ import print_function
+#cython: language_level=3
 from math import sqrt
 from gmpy2 import mpz
 import cython
@@ -23,4 +23,4 @@ cpdef factorize(composite_number):
 
     print(f'The divisors of {composite_number} are:', end=' ')
     for divisor in divisors:
-        print(f'Divisor', end=' ')
+        print(f'Divisor', end= ' ')

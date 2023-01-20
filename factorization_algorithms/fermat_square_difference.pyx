@@ -1,19 +1,36 @@
+#cython: language_level=3
 from math import floor, sqrt
 from gmpy2 cimport *
-from cython_utils import get_big_cython_int
-import cython
+import_gmpy2()
 
-cpdef factorize(composite_number):
-    cdef mpz x = get_big_cython_int(floor(sqrt(composite_number)))
-    cdef int t = 2*x + 1
-    cdef mpz r = get_big_cython_int(x*x - composite_number)
-        # x*x - composite_number
-    cdef int r_root = int(sqrt(abs(r)))
-    while r_root*r_root != r:
-        r += t
-        t += 2
-        r_root = int(sqrt(abs(r)))
-    x = (t - 1) // 2
-    y = int(sqrt(r))
-    print x-y
-    print x+y
+
+cdef extern from "gmp.h":
+    void mpz_init(mpz_t)
+    void mpz_init_set_si(mpz_t, long)
+    void mpz_add(mpz_t, mpz_t, mpz_t)
+    void mpz_sub(mpz_t, mpz_t, mpz_t)
+    void mpz_mul(mpz_t, mpz_t, mpz_t)
+    void mpz_mul_si(mpz_t, mpz_t, long)
+
+
+cpdef factorize(n: int):
+    cdef mpz composite_number = mpz_init_set_si(MPZ(GMPy_MPZ_New(NULL)),
+                                                n)
+    cdef mpz x = GMPy_MPZ_New(NULL)
+    cdef mpz r = GMPy_MPZ_New(NULL)
+    cdef mpz t = GMPy_MPZ_New(NULL)
+    cdef mpz r_root = GMPy_MPZ_New(NULL)
+    print(x)
+    # mpz_init_set_si(MPZ(x), floor(sqrt(composite_number)))
+    # t = 2*x + 1
+    # mpz_init_set_si(mpz_sub(mpz_mul(MPZ(x),x,x), composite_number))
+    # r_root = sqrt(abs(r))
+    #
+    # while r_root*r_root != r:
+    #     r += t
+    #     t += 2
+    #     r_root = int(sqrt(abs(r)))
+    # x = (t - 1) // 2
+    # y = int(sqrt(r))
+    # print(int(x-y))
+    # print(x+y)
