@@ -1,6 +1,6 @@
 #cython: language_level=3
-from math import floor, sqrt
 from gmpy2 cimport *
+from gmpy2 import mpz, is_square, ceil, floor, sqrt, gcd, is_prime
 import_gmpy2()
 
 
@@ -13,24 +13,33 @@ cdef extern from "gmp.h":
     void mpz_mul_si(mpz_t, mpz_t, long)
 
 
-cpdef factorize(n: int):
-    cdef mpz composite_number = mpz_init_set_si(MPZ(GMPy_MPZ_New(NULL)),
-                                                n)
-    cdef mpz x = GMPy_MPZ_New(NULL)
-    cdef mpz r = GMPy_MPZ_New(NULL)
-    cdef mpz t = GMPy_MPZ_New(NULL)
-    cdef mpz r_root = GMPy_MPZ_New(NULL)
-    print(x)
-    # mpz_init_set_si(MPZ(x), floor(sqrt(composite_number)))
-    # t = 2*x + 1
-    # mpz_init_set_si(mpz_sub(mpz_mul(MPZ(x),x,x), composite_number))
-    # r_root = sqrt(abs(r))
-    #
-    # while r_root*r_root != r:
-    #     r += t
-    #     t += 2
-    #     r_root = int(sqrt(abs(r)))
-    # x = (t - 1) // 2
-    # y = int(sqrt(r))
-    # print(int(x-y))
-    # print(x+y)
+cpdef tuple factorize_default(n: int):
+    cdef mpz composite_number = mpz(n)
+    cdef mpz first_factor = mpz(floor(sqrt(composite_number)))
+    cdef mpz r = mpz(first_factor*first_factor - composite_number)
+    cdef mpz t = mpz(2*first_factor + 1)
+    cdef mpz r_root = mpz(sqrt(abs(r)))
+    while r_root*r_root != r:
+        print("ASD")
+        r += t
+        t += 2
+        r_root = mpz(int(sqrt(abs(r))))
+    first_factor = (t - 1) // 2
+    cdef mpz second_factor = mpz(int(sqrt(r)))
+    return first_factor - second_factor, first_factor + second_factor
+
+cpdef factorize_hart(n: int, limit: int):
+    cdef mpz composite_number = mpz(n)
+    cdef mpz s = mpz(0)
+    cdef mpz m = mpz(0)
+    for i in range(1, limit):
+        s = mpz(ceil(sqrt(composite_number*i)))
+        m = mpz(s * s % composite_number)
+        if is_square(m):
+            break
+    cdef mpz t = mpz(sqrt(m))
+    cdef factor = mpz(gcd(s-t, composite_number))
+    return factor, composite_number // factor
+
+cpdef factorize_lehman(n):
+    pass
