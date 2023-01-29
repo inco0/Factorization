@@ -7,7 +7,7 @@ if __name__ == "__main__":
     if is_prime(number_to_be_factorized):
         print("Number is most likely prime")
         exit()
-    factors: tuple = fermat_square_difference.factorize_default(number_to_be_factorized)
+    factors: list = trial_division.factorize(number_to_be_factorized)
     result = 1
     for factor in factors:
         print(factor)

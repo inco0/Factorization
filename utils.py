@@ -4,6 +4,7 @@ import time
 from math import gcd
 from fractions import Fraction
 from functools import reduce
+from gmpy2 import random_state
 
 
 """
@@ -138,6 +139,9 @@ def pollard_factorization(n):
         n //= next_factor
 
     return factors
+
+def get_gmpy_random_state():
+    return random_state(hash(random_state()))
 
 
 first_primes = [

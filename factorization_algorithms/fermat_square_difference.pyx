@@ -1,16 +1,6 @@
 #cython: language_level=3
 from gmpy2 cimport *
 from gmpy2 import mpz, is_square, ceil, floor, sqrt, gcd, is_prime
-import_gmpy2()
-
-
-cdef extern from "gmp.h":
-    void mpz_init(mpz_t)
-    void mpz_init_set_si(mpz_t, long)
-    void mpz_add(mpz_t, mpz_t, mpz_t)
-    void mpz_sub(mpz_t, mpz_t, mpz_t)
-    void mpz_mul(mpz_t, mpz_t, mpz_t)
-    void mpz_mul_si(mpz_t, mpz_t, long)
 
 
 cpdef tuple factorize_default(n: int):
@@ -39,7 +29,7 @@ cpdef factorize_hart(n: int, limit: int):
             break
     cdef mpz t = mpz(sqrt(m))
     cdef factor = mpz(gcd(s-t, composite_number))
-    return factor, composite_number // factor
+    return [factor, composite_number // factor]
 
 cpdef factorize_lehman(n):
     pass
