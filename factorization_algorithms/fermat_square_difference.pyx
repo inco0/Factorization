@@ -3,7 +3,7 @@ from gmpy2 cimport *
 from gmpy2 import mpz, is_square, ceil, floor, sqrt, gcd, is_prime
 
 
-cpdef tuple factorize_default(n: int):
+cpdef list factorize_default(n: int):
     cdef mpz composite_number = mpz(n)
     cdef mpz first_factor = mpz(floor(sqrt(composite_number)))
     cdef mpz r = mpz(first_factor*first_factor - composite_number)
@@ -16,9 +16,9 @@ cpdef tuple factorize_default(n: int):
         r_root = mpz(int(sqrt(abs(r))))
     first_factor = (t - 1) // 2
     cdef mpz second_factor = mpz(int(sqrt(r)))
-    return first_factor - second_factor, first_factor + second_factor
+    return [first_factor - second_factor, first_factor + second_factor]
 
-cpdef factorize_hart(n: int, limit: int):
+cpdef list factorize_hart(n: int, limit: int):
     cdef mpz composite_number = mpz(n)
     cdef mpz s = mpz(0)
     cdef mpz m = mpz(0)

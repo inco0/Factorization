@@ -1,6 +1,5 @@
 #cython: language_level=3
-from math import sqrt
-from gmpy2 import mpz
+from gmpy2 import mpz, sqrt
 from gmpy2 cimport *
 
 
