@@ -1,0 +1,2 @@
+class UnfinishedFactorization(Exception):
+    pass

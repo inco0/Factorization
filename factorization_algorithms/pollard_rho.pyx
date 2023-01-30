@@ -3,6 +3,7 @@ from gmpy2 cimport *
 from utils import get_gmpy_random_state
 from math import sqrt
 from gmpy2 import mpz, mpz_random, random_state, is_prime, gcd
+from exceptions.exceptions import UnfinishedFactorization
 
 
 cpdef list factorize(n: int):
@@ -14,12 +15,22 @@ cpdef list factorize(n: int):
     cdef probable_factor = 1
 
     while probable_factor == 1:
-        c = pollard_rho_function(c, b, n)
-        d = pollard_rho_function(pollard_rho_function(d, b, n) , b, n)
+        c = mpz(pollard_rho_function(c, b, composite_number))
+        d = mpz(pollard_rho_function(pollard_rho_function(d, b, composite_number) , b, composite_number))
         probable_factor = gcd(c - d, composite_number)
 
     if probable_factor < composite_number:
         return [probable_factor]
+    else:
+        raise UnfinishedFactorization()
 
-cpdef mpz pollard_rho_function(x: mpz, b: mpz, n: mpz):
-    return mpz((x*x + b % n))
+
+cpdef mpz pollard_rho_function(x: mpz, b: mpz, composite_number: mpz):
+    return mpz(x*x + b % composite_number)
+
+
+cpdef get_pollard_rho_factorization(number_to_be_factored: int):
+    try:
+        factors: list = pollard_rho.factorize(number_to_be_factored)
+    except UnfinishedFactorization:
+        factors: list = pollard_rho.factorize(number_to_be_factored)
