@@ -1,15 +1,15 @@
 from factorization_algorithms import trial_division, fermat_square_difference, utils
-from factorization_algorithms.pollard_rho import factorize, get_polard_rho_factorization
+from factorization_algorithms.pollard_rho import factorize, get_pollard_rho_factorization
 from gmpy2 import is_prime
+from exceptions.exceptions import InputIsPrimeNumber
 
 
 if __name__ == "__main__":
-    number_to_be_factored = 105
+    number_to_be_factored = 187
     if is_prime(number_to_be_factored):
-        print("Number is most likely prime")
-        exit()
+        raise InputIsPrimeNumber(f"{number_to_be_factored} is prime.")
 
-    get_pollard_rdho_factorization(number_to_be_factored)
+    factors = get_pollard_rho_factorization(number_to_be_factored)
     result = 1
     for factor in factors:
         print(factor)
