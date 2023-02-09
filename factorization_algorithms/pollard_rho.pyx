@@ -34,15 +34,17 @@ cpdef list get_pollard_rho_factorization(number_to_be_factored: int):
     factors: list[mpz] = []
     while i <= 10:
         try:
+            #print(number_to_be_factored)
             factor = factorize(number_to_be_factored)
+            #print(factor)
             factors.append(factor)
-            while is_prime(factor):
-                factors.append(factor)
-                number_to_be_factored //= factor
-                print(number_to_be_factored)
+            # while is_prime(factor):
+            #     factors.append(factor)
+            number_to_be_factored //= factor
+            if is_prime(number_to_be_factored):
+                factors.append(number_to_be_factored)
+                return factors
         except UnfinishedFactorization:
             factors: list = factorize(number_to_be_factored)
-        if number_to_be_factored == 1:
-            return factors
         i += 1
     raise FactorizationFailed(f"Could not find enough proper factors of {number_to_be_factored}")

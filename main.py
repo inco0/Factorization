@@ -5,7 +5,7 @@ from exceptions.exceptions import InputIsPrimeNumber
 
 
 if __name__ == "__main__":
-    number_to_be_factored = 187
+    number_to_be_factored = 339126523890
     if is_prime(number_to_be_factored):
         raise InputIsPrimeNumber(f"{number_to_be_factored} is prime.")
 
