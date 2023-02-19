@@ -6,3 +6,6 @@ class FactorizationFailed(Exception):
 
 class InputIsPrimeNumber(FactorizationFailed):
     pass
+
+class InvalidInput(Exception):
+    pass

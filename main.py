@@ -1,4 +1,4 @@
-from factorization_algorithms import trial_division, fermat_square_difference, utils
+from factorization_algorithms import trial_division, fermat_square_difference, utils, quadratic_sieve
 from factorization_algorithms.pollard_rho import factorize, get_pollard_rho_factorization
 from gmpy2 import is_prime
 from exceptions.exceptions import InputIsPrimeNumber

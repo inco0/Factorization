@@ -5,3 +5,4 @@ gmpy2==2.1.5
 humanfriendly==10.0
 pydevd-pycharm==221.5921.27
 pyreadline3==3.4.1
+numpy==1.24.2
