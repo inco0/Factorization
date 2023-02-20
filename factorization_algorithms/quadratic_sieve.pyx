@@ -4,6 +4,10 @@ from gmpy2 import mpz, mpz_random, random_state, is_prime, gcd, sqrt, ceil, exp,
 from exceptions.exceptions import InvalidInput
 import numpy as np
 
+cpdef list prime_sieve(smooth_bound)
+    """
+    """
+
 cpdef tuple initialization(number_to_be_factored):
     """
     Initializes the things needed to do the factorization
@@ -12,8 +16,8 @@ cpdef tuple initialization(number_to_be_factored):
     :return : A tuple with B and a list of roots such that root_i^2≡n(mod p_i)
     """
     cdef mpz n = mpz(number_to_be_factored)
-    cdef mpz b_smooth_length = mpz(ceil(sqrt(exp(sqrt(log(n)*log(log(n))))))) # √(e^(√(ln(n)ln(ln(n))))
-    roots = np.array([])
+    cdef mpz smooth_boundary = mpz(ceil(sqrt(exp(sqrt(log(n)*log(log(n))))))) # The value of B is √(e^(√(ln(n)ln(ln(n))))
+    primes = prime_sieve(smooth_boundary)
 
 cpdef list get_quadratic_sieve_factorization(number_to_be_factored: int):
     factors: list[mpz] = []
