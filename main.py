@@ -18,7 +18,7 @@ def quadratic_sieve(n: int):
 
 
 if __name__ == "__main__":
-    number_to_be_factored = 800000987987698796780018000009879876987967800180000098798769879678001
+    number_to_be_factored = 539873
     if is_prime(number_to_be_factored):
         raise InputIsPrimeNumber(f"{number_to_be_factored} is prime.")
     # pollard_rho(number_to_be_factored)
