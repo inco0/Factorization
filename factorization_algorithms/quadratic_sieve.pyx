@@ -4,7 +4,9 @@ from gmpy2 import mpz, is_prime, sqrt, exp, log, is_congruent, powmod, mpz_rando
 from exceptions.exceptions import InvalidInput
 from math import ceil
 from random import randint
-from logging import Logger as logger
+import logging
+
+logger = logging.getLogger("app")
 
 
 cpdef list get_quadratic_sieve_factorization(number_to_be_factored: int):
@@ -12,13 +14,15 @@ cpdef list get_quadratic_sieve_factorization(number_to_be_factored: int):
     if number_to_be_factored % 2 == 0 or is_prime(number_to_be_factored):
         raise InvalidInput("Enter an odd composite number that is not a power")
     logger.info("1.PERFORMING INITIALIZATION")
-    smooth_boundary, square_roots, sieve_range, factor_base = initialization(number_to_be_factored)
+    smooth_boundary, square_roots, sieve_length, factor_base = initialization(number_to_be_factored)
     logger.info("2.PERFORMING SIEVING")
-    smooth_numbers, smooth_sequence = sieving(smooth_boundary, number_to_be_factored, square_roots, sieve_range)
-    required_smooth_numbers = len(factor_base) + 2
+    smooth_numbers, smooth_sequence = sieving(smooth_boundary, number_to_be_factored, square_roots, sieve_length, factor_base)
+    required_smooth_numbers = len(factor_base) + 1
     while len(smooth_numbers) < required_smooth_numbers:
-        sieve_range *= 2
-        smooth_numbers, smooth_sequence = sieving(smooth_boundary, number_to_be_factored, square_roots, sieve_range)
+        sieve_length *= 2
+        smooth_numbers, smooth_sequence = sieving(smooth_boundary, number_to_be_factored, square_roots, sieve_length, factor_base)
+    logger.info(f"Found smooth numbers,{smooth_numbers} and smooth sequence {smooth_sequence}")
+    logger.info("2.PERFORMING GAUSS ELIMINATION")
     # linear_algebra()
     # factorize()
 
@@ -37,37 +41,39 @@ cpdef tuple initialization(number_to_be_factored):
     factor_base = sieve_of_eratosthenes(smooth_boundary)
     square_roots = get_square_roots(number_to_be_factored, smooth_boundary, factor_base)
     sieve_range = 10000
-    logger.info(square_roots)
     return smooth_boundary, square_roots, sieve_range, factor_base
 
-cpdef tuple sieving(smooth_boundary, number_to_be_factored, square_roots, sieve_range, factor_base):
+cpdef tuple sieving(smooth_boundary, number_to_be_factored, square_roots, sieve_length, factor_base):
     """
     Sieves the sequence x^2-n for B-smooth values
     
     :param smooth_boundary: The B smooth boundary deciding the upper limit of primes we are sieving with
     :param number_to_be_factored: The number that is being factored
     :param square_roots: A list of square roots of n modulo the primes from the prime base
-    :param sieve_range: Up to how many numbers the sieving happens to search for B-smooth numbers
-    :param factor_base: A list with the primes from 3 up to number_to_be_factored
+    :param sieve_length: Up to how many numbers the sieving happens to search for B-smooth numbers
+    :param factor_base: A list with the primes up to number_to_be_factored
     :return: A list of B-smooth numbers
     """
-    initial_sieve_point = ceil(sqrt(number_to_be_factored))
-    sieve_sequence = [x * x - number_to_be_factored for x in range(initial_sieve_point, initial_sieve_point + sieve_range)]
-    sieve_numbers = [x for x in range(initial_sieve_point, initial_sieve_point + sieve_range)]
-    product_primes = [1 for _ in range(initial_sieve_point, initial_sieve_point + sieve_range)]
+    cpdef mpz initial_sieve_point = mpz(ceil(sqrt(number_to_be_factored)))
+    cpdef int smooth_numbers_found = mpz()
+    sieve_sequence = [x * x - number_to_be_factored for x in range(initial_sieve_point, initial_sieve_point + sieve_length)]
+    sieve_numbers = [x for x in range(initial_sieve_point, initial_sieve_point + sieve_length)]
+    product_primes = [1 for _ in range(initial_sieve_point, initial_sieve_point + sieve_length)]
     smooth_sequence = [] # The numbers x^2-n that are B-smooth
     smooth_numbers = [] # Numbers x such that x^2-n is B-smooth
-    cpdef int smooth_numbers_found = 0
 
-    for factor_base in factor_base:
-        for root in square_roots
+    for index, factor in enumerate(factor_base[1:]):
+        for root in square_roots[index+1]:
+            for i in range((root - initial_sieve_point) % factor, sieve_length, factor):
+                while sieve_sequence[i] % factor == 0:
+                    sieve_sequence[i] //= factor
 
     for i in range(sieve_length):
-        if sieve_list[i] == 1:
-            smooth_numbers.append(smooth_x_original[i])
-            smooth_sequence.append(sieve_list_original[i])
+        if sieve_sequence[i] == 1:
+            smooth_numbers.append(sieve_numbers[i])
+            smooth_sequence.append(sieve_sequence[i])
             smooth_numbers_found += 1
-        if smooth_numbers_found == len(factor_base) + 2:
+        if smooth_numbers_found == len(factor_base) + 1:
             break
 
     return smooth_numbers, smooth_sequence
@@ -114,7 +120,7 @@ cpdef list sieve_of_eratosthenes(bound):
             for j in range(i * i, bound, i):
                 prime_flag[j] = False
     logger.info("========FACTOR BASE FOUND========")
-    return [prime for prime in range(bound) if prime_flag[prime] == True and prime > 2]
+    return [prime_index for prime_index in range(bound) if prime_flag[prime_index] == True and prime_index >= 2]
 
 cpdef list get_square_roots(number_to_be_factored, smooth_bound, factor_base):
     """
@@ -122,11 +128,11 @@ cpdef list get_square_roots(number_to_be_factored, smooth_bound, factor_base):
 
     :param number_to_be_factored: The number that will be factored
     :param smooth_bound: The B smooth bound
-    :param factor_base: A list with the primes from 3 up to number_to_be_factored
+    :param factor_base: A list with the primes up to number_to_be_factored
     :return: A list of roots 
     """
-    roots = []
-    for factor in factor_base:
+    roots = [1]
+    for factor in factor_base[1:]: # For factor = 2 assume the root is 1
         if legendre(number_to_be_factored, factor) == 1:
             roots.append(square_root_modulo_prime(number_to_be_factored, factor))
     logger.info("========SQUARE ROOTS FOUND========")

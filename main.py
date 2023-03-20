@@ -2,6 +2,7 @@ from gmpy2 import is_prime
 from exceptions.exceptions import InputIsPrimeNumber
 from factorization_algorithms.pollard_rho import get_pollard_rho_factorization
 from factorization_algorithms.quadratic_sieve import get_quadratic_sieve_factorization
+import logging
 
 
 def pollard_rho(n: int):
@@ -17,8 +18,17 @@ def quadratic_sieve(n: int):
     get_quadratic_sieve_factorization(n)
 
 
+def setup_logger():
+    logger = logging.getLogger("app")
+    logging.basicConfig(format="%(message)s")
+    logging.basicConfig()
+    logger.root.setLevel(logging.INFO)
+    logger.setLevel(logging.INFO)
+
+
 if __name__ == "__main__":
-    number_to_be_factored = 539873
+    setup_logger()
+    number_to_be_factored = 13290059
     if is_prime(number_to_be_factored):
         raise InputIsPrimeNumber(f"{number_to_be_factored} is prime.")
     # pollard_rho(number_to_be_factored)
