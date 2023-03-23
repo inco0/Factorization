@@ -24,12 +24,13 @@ cpdef list get_quadratic_sieve_factorization(number_to_be_factored: int):
 
     while len(smooth_numbers) < required_smooth_numbers:
         sieve_length *= 2
+        smooth_boundary = 100
         smooth_numbers, smooth_sequence = sieving(smooth_boundary, number_to_be_factored, square_roots, sieve_length, factor_base)
         tries += 1
         if tries == 3:
             smooth_boundary *= 4
             tries = 0
-            smooth_boundary, square_roots, sieve_length, factor_base = initialization(number_to_be_factored)
+            smooth_boundary, square_roots, sieve_length, factor_base = initialization(number_to_be_factored, smooth_boundary)
             required_smooth_numbers = len(factor_base) + 1
 
     logger.debug(f"Found smooth numbers,{smooth_numbers} and smooth sequence {smooth_sequence}")
@@ -38,16 +39,17 @@ cpdef list get_quadratic_sieve_factorization(number_to_be_factored: int):
     # factorize()
 
 
-cpdef tuple initialization(number_to_be_factored):
+cpdef tuple initialization(number_to_be_factored, smooth_boundary = None):
     """
     Initializes the variables needed to perform the quadratic sieve factorization
 
+    :param smooth_boundary: If there is a value passed, do not calculate the default value 
     :param number_to_be_factored: The number being factored
     :return: A tuple with smooth boundary B and a list of roots such that root_i^2≡n(mod p_i)
     """
     cdef mpz n = mpz(number_to_be_factored)
-    cdef mpz smooth_boundary = mpz(
-        ceil(sqrt(exp(sqrt(log(n) * log(log(n)))))))  # The value of B is √(e^(√(ln(n)ln(ln(n))))
+    if smooth_boundary is None:
+        smooth_boundary = int(ceil(sqrt(exp(sqrt(log(n) * log(log(n))))))) # The value of B is √(e^(√(ln(n)ln(ln(n))))
     print(smooth_boundary)
     factor_base = sieve_of_eratosthenes(smooth_boundary)
     square_roots = get_square_roots(number_to_be_factored, smooth_boundary, factor_base)
@@ -118,10 +120,10 @@ cpdef legendre(num, p):
 
 cpdef list sieve_of_eratosthenes(bound):
     """
-    Perform the sieve of eratosthenes up to n and return all the primes except 2
+    Perform the sieve of eratosthenes up to the bound and return all the primes except 2
 
     :param bound: The number up to which you sieve for primes
-    :return: A list with the primes from 3 up to n 
+    :return: A list with the primes from 3 up to the bound 
     """
     prime_flag = [True] * bound
     primes = []
