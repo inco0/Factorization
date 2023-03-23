@@ -15,13 +15,24 @@ cpdef list get_quadratic_sieve_factorization(number_to_be_factored: int):
         raise InvalidInput("Enter an odd composite number that is not a power")
     logger.info("1.PERFORMING INITIALIZATION")
     smooth_boundary, square_roots, sieve_length, factor_base = initialization(number_to_be_factored)
+
     logger.info("2.PERFORMING SIEVING")
     smooth_numbers, smooth_sequence = sieving(smooth_boundary, number_to_be_factored, square_roots, sieve_length, factor_base)
+
     required_smooth_numbers = len(factor_base) + 1
+    tries = 0
+
     while len(smooth_numbers) < required_smooth_numbers:
         sieve_length *= 2
         smooth_numbers, smooth_sequence = sieving(smooth_boundary, number_to_be_factored, square_roots, sieve_length, factor_base)
-    logger.info(f"Found smooth numbers,{smooth_numbers} and smooth sequence {smooth_sequence}")
+        tries += 1
+        if tries == 3:
+            smooth_boundary *= 4
+            tries = 0
+            smooth_boundary, square_roots, sieve_length, factor_base = initialization(number_to_be_factored)
+            required_smooth_numbers = len(factor_base) + 1
+
+    logger.debug(f"Found smooth numbers,{smooth_numbers} and smooth sequence {smooth_sequence}")
     logger.info("2.PERFORMING GAUSS ELIMINATION")
     # linear_algebra()
     # factorize()
@@ -37,7 +48,7 @@ cpdef tuple initialization(number_to_be_factored):
     cdef mpz n = mpz(number_to_be_factored)
     cdef mpz smooth_boundary = mpz(
         ceil(sqrt(exp(sqrt(log(n) * log(log(n)))))))  # The value of B is √(e^(√(ln(n)ln(ln(n))))
-    logger.info(f"Smooth boundary is {smooth_boundary}")
+    print(smooth_boundary)
     factor_base = sieve_of_eratosthenes(smooth_boundary)
     square_roots = get_square_roots(number_to_be_factored, smooth_boundary, factor_base)
     sieve_range = 10000
@@ -49,7 +60,7 @@ cpdef tuple sieving(smooth_boundary, number_to_be_factored, square_roots, sieve_
     
     :param smooth_boundary: The B smooth boundary deciding the upper limit of primes we are sieving with
     :param number_to_be_factored: The number that is being factored
-    :param square_roots: A list of square roots of n modulo the primes from the prime base
+    :param square_roots: A list of tuples with the square roots of n modulo the primes from the prime base
     :param sieve_length: Up to how many numbers the sieving happens to search for B-smooth numbers
     :param factor_base: A list with the primes up to number_to_be_factored
     :return: A list of B-smooth numbers
@@ -61,12 +72,11 @@ cpdef tuple sieving(smooth_boundary, number_to_be_factored, square_roots, sieve_
     product_primes = [1 for _ in range(initial_sieve_point, initial_sieve_point + sieve_length)]
     smooth_sequence = [] # The numbers x^2-n that are B-smooth
     smooth_numbers = [] # Numbers x such that x^2-n is B-smooth
-
-    for index, factor in enumerate(factor_base[1:]):
-        for root in square_roots[index+1]:
-            for i in range((root - initial_sieve_point) % factor, sieve_length, factor):
-                while sieve_sequence[i] % factor == 0:
-                    sieve_sequence[i] //= factor
+    print(square_roots)
+    for root, factor in square_roots:
+        for i in range((root - initial_sieve_point) % factor, sieve_length, factor):
+            while sieve_sequence[i] % factor == 0:
+                sieve_sequence[i] //= factor
 
     for i in range(sieve_length):
         if sieve_sequence[i] == 1:
@@ -120,7 +130,7 @@ cpdef list sieve_of_eratosthenes(bound):
             for j in range(i * i, bound, i):
                 prime_flag[j] = False
     logger.info("========FACTOR BASE FOUND========")
-    return [prime_index for prime_index in range(bound) if prime_flag[prime_index] == True and prime_index >= 2]
+    return [prime_index for prime_index in range(bound) if prime_flag[prime_index] == True and prime_index > 2]
 
 cpdef list get_square_roots(number_to_be_factored, smooth_bound, factor_base):
     """
@@ -131,32 +141,34 @@ cpdef list get_square_roots(number_to_be_factored, smooth_bound, factor_base):
     :param factor_base: A list with the primes up to number_to_be_factored
     :return: A list of roots 
     """
-    roots = [1]
-    for factor in factor_base[1:]: # For factor = 2 assume the root is 1
+    roots = []
+    print(factor_base)
+    for factor in factor_base:
         if legendre(number_to_be_factored, factor) == 1:
-            roots.append(square_root_modulo_prime(number_to_be_factored, factor))
+            for root in square_root_modulo_prime(number_to_be_factored, factor):
+                roots.append(root)
     logger.info("========SQUARE ROOTS FOUND========")
     return roots
 
 
-cpdef tuple square_root_modulo_prime(num, prime):
+cpdef list[tuple] square_root_modulo_prime(num, prime):
     """
     Given an odd prime and an integer n with (n/p) = 1, this algorithm returns a solution a to a^2 ≡ n (mod prime).
     
     :param num: The number that is being factored
     :param prime: A prime number, part of the prime base
-    :return: The negative and positive solutions of a^2 ≡ n (mod prime)
+    :return: The negative and positive solutions of a^2 ≡ n (mod prime) and the prime in a list of tuples
     """
     cdef mpz n = mpz(num % prime)
     if is_congruent(prime, 3, 8) | is_congruent(prime, 7, 8):
         x = powmod(n, (prime + 1) // 4, prime)
-        return x, prime - x % prime
+        return [(x, prime), (prime - x % prime, prime)]
     elif is_congruent(prime, 5, 8):
         x = powmod(n, (prime + 3) // 8, prime)
         c = powmod(x, 2, prime)
         if not is_congruent(c, n, prime):
             x = x * powmod(2, (prime - 1) // 4, prime)
-        return x, prime - x % prime
+        return [(x, prime), (prime - x % prime, prime)]
     else : # is_congruent(prime, 1, 8)
         while True:
             d = randint(2, prime - 1)
@@ -170,7 +182,7 @@ cpdef tuple square_root_modulo_prime(num, prime):
             if is_congruent(int(pow(a*pow(d, m), pow(2, s-i-1))), -1, prime):
                 m += pow(2, i)
         x = pow(mpz(n), mpz((t + 1) // 2)) * pow(mpz(d), mpz(m // 2)) % prime
-        return x, prime - x % prime
+        return [(x, prime), (prime - x % prime, prime)]
 
 
 cpdef represent_as_power_of_two(n):
