@@ -22,8 +22,8 @@ def setup_logger():
     logger = logging.getLogger("app")
     logging.basicConfig(format="%(message)s")
     logging.basicConfig()
-    logger.root.setLevel(logging.INFO)
-    logger.setLevel(logging.INFO)
+    logger.root.setLevel(logging.DEBUG)
+    logger.setLevel(logging.DEBUG)
 
 
 if __name__ == "__main__":
