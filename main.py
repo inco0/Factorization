@@ -9,7 +9,7 @@ def pollard_rho(n: int):
     factors = get_pollard_rho_factorization(n)
     result = 1
     for factor in factors:
-        print(factor)
+        logger.info(factor)
         result *= factor
     assert (result == n)
 
@@ -22,13 +22,12 @@ def setup_logger():
     logger = logging.getLogger("app")
     logging.basicConfig(format="%(message)s")
     logging.basicConfig()
-    logger.root.setLevel(logging.DEBUG)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
 
 if __name__ == "__main__":
     setup_logger()
-    number_to_be_factored = 13290059
+    number_to_be_factored = 1522605027922533360535618378132637429718068114961380688657908494580122963258952897654000350692006139
     if is_prime(number_to_be_factored):
         raise InputIsPrimeNumber(f"{number_to_be_factored} is prime.")
     # pollard_rho(number_to_be_factored)
