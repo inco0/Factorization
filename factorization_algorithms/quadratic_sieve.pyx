@@ -49,7 +49,7 @@ cpdef tuple initialization(number_to_be_factored, smooth_boundary = None):
     """
     cdef mpz n = mpz(number_to_be_factored)
     if smooth_boundary is None:
-        smooth_boundary = int(ceil(sqrt(exp(sqrt(log(n) * log(log(n))))))) # The value of B is √(e^(√(ln(n)ln(ln(n))))
+        smooth_boundary = int(ceil(sqrt(exp(sqrt(log(n) * log(log(n))))))) # The value of the smooth boundary B is √(e^(√(ln(n)ln(ln(n))))
     factor_base = sieve_of_eratosthenes(smooth_boundary)
     square_roots = get_square_roots(number_to_be_factored, smooth_boundary, factor_base)
     sieve_length = 10000
@@ -152,7 +152,7 @@ cpdef list sieve_of_eratosthenes(bound):
             for j in range(i * i, bound, i):
                 prime_flag[j] = False
     logger.info("========FACTOR BASE FOUND========")
-    return [prime_index for prime_index in range(bound) if prime_flag[prime_index] == True]
+    return [prime_index for prime_index in range(bound) if prime_flag[prime_index] == True and prime_index > 1]
 
 cpdef list get_square_roots(number_to_be_factored, smooth_bound, factor_base):
     """

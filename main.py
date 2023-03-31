@@ -9,7 +9,7 @@ def pollard_rho(n: int):
     factors = get_pollard_rho_factorization(n)
     result = 1
     for factor in factors:
-        print(factor)
+        logger.info(factor)
         result *= factor
     assert (result == n)
 
@@ -22,7 +22,6 @@ def setup_logger():
     logger = logging.getLogger("app")
     logging.basicConfig(format="%(message)s")
     logging.basicConfig()
-    logger.root.setLevel(logging.DEBUG)
     logger.setLevel(logging.DEBUG)
 
 
