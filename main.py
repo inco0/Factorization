@@ -27,7 +27,7 @@ def setup_logger():
 
 if __name__ == "__main__":
     setup_logger()
-    number_to_be_factored = 13290059
+    number_to_be_factored = 13274718411466765
     if is_prime(number_to_be_factored):
         raise InputIsPrimeNumber(f"{number_to_be_factored} is prime.")
     # pollard_rho(number_to_be_factored)
