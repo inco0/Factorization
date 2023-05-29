@@ -1,2 +1,8 @@
 # Factorization
-A repository for my master degree thesis
+- A repository of factorization algorithms implemented in Cython
+
+# How to run
+- Create a python virtual environment
+- Run pip install -r requirements.txt
+- Run `cybuilder build -y`
+- Run `python main.py`
