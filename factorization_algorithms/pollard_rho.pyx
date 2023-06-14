@@ -1,6 +1,6 @@
 #cython: language_level=3
 from gmpy2 cimport *
-from utils import get_gmpy_random_state
+from gmpy2 import random_state
 from math import sqrt
 from gmpy2 import mpz, mpz_random, random_state, is_prime, gcd
 from exceptions.exceptions import FactorizationFailed, UnfinishedFactorization
@@ -8,8 +8,8 @@ from exceptions.exceptions import FactorizationFailed, UnfinishedFactorization
 
 cpdef int factorize(n: int):
     cdef mpz composite_number = mpz(n)
-    cdef mpz b = mpz(1 + mpz_random(get_gmpy_random_state(), n-3))
-    cdef mpz s = mpz(mpz_random(get_gmpy_random_state(), n-1))
+    cdef mpz b = mpz(1 + mpz_random(random_state(hash(random_state())), n-3))
+    cdef mpz s = mpz(mpz_random(random_state(hash(random_state())), n-1))
     cdef mpz c = s
     cdef mpz d = s
     cdef probable_factor = 1

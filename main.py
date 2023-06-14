@@ -31,5 +31,4 @@ if __name__ == "__main__":
     if is_prime(number_to_be_factored):
         raise InputIsPrimeNumber(f"{number_to_be_factored} is prime.")
     # pollard_rho(number_to_be_factored)
-    print(f"Initializing quadratic sieve factoring of {number_to_be_factored}")
     quadratic_sieve(number_to_be_factored)
