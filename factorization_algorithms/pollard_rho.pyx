@@ -34,9 +34,7 @@ cpdef list get_pollard_rho_factorization(number_to_be_factored: int):
     factors: list[mpz] = []
     while i <= 10:
         try:
-            #print(number_to_be_factored)
             factor = factorize(number_to_be_factored)
-            #print(factor)
             factors.append(factor)
             # while is_prime(factor):
             #     factors.append(factor)

@@ -3,9 +3,9 @@ from gmpy2 import mpz, sqrt
 from gmpy2 cimport *
 
 
-cpdef factorize(composite_number: int):
+cpdef get_trial_division_factorization(composite_number: int):
     cdef mpz current_number = mpz(composite_number)
-    cdef mpz prime = 2
+    cdef mpz prime = mpz(2)
     divisors: [mpz] = []
 
     while prime <= mpz(sqrt(composite_number)):
