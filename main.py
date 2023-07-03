@@ -17,19 +17,19 @@ class Algorithms(Enum):
 
 
 def trial_division(n: int):
-    factors: [] = get_trial_division_factorization(n)
+    factors: list = get_trial_division_factorization(n)
     result = 1
     print_factors(n, factors)
 
 
 def fermat(n: int):
-    factors: [] = get_fermat_factorization(n)
+    factors: list = get_fermat_factorization(n)
     result = 1
     print_factors(n, factors)
 
 
 def hart(n: int):
-    factors: [] = get_hart_factorization(n, 10000)
+    factors: list = get_hart_factorization(n, 10000)
     result = 1
     print_factors(n, factors)
     
@@ -40,10 +40,11 @@ def pollard_rho(n: int):
 
 
 def quadratic_sieve(n: int):
-    get_quadratic_sieve_factorization(n)
+    factors = get_quadratic_sieve_factorization(n)
+    print_factors(n, factors)
 
 
-def print_factors(number_to_be_factored: int, factors: [int]):
+def print_factors(number_to_be_factored: int, factors: list):
     print(f"The factors of {number_to_be_factored} are:", end = " ")
     for factor in factors:
         print(factor, end = " ")

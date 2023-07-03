@@ -2,7 +2,6 @@
 import logging
 from math import ceil
 from random import randint
-
 from gmpy2 cimport *
 from gmpy2 import mpz, is_prime, sqrt, exp, log, is_congruent, powmod
 
@@ -20,6 +19,7 @@ cpdef list get_quadratic_sieve_factorization(number_to_be_factored: int):
     cpdef int smooth_boundary = 0
 
     while smooth_numbers_found < required_smooth_numbers:
+        logger.info("\n=======================BEGINNING FACTORIZATION=======================\n")
         logger.info("1.PERFORMING INITIALIZATION")
         smooth_boundary, square_roots, factor_base, sieve_length = initialization(number_to_be_factored, smooth_boundary)
         logger.info("2.PERFORMING SIEVING")
@@ -29,10 +29,9 @@ cpdef list get_quadratic_sieve_factorization(number_to_be_factored: int):
         required_smooth_numbers = len(factor_base) + 1
         smooth_boundary *= 4
         logger.debug(f"Found smooth numbers,{smooth_numbers} and smooth sequence factorization {smooth_sequence_factorization}")
-
     logger.info("3.PERFORMING LINEAR ALGEBRA")
-    linear_algebra(smooth_numbers, smooth_sequence_factorization)
-    # factorize()
+    dependent_rows = linear_algebra(smooth_numbers, smooth_sequence_factorization, factor_base)
+    factorize(dependente_rows, smooth_numbers, smooth_sequence, number_to_be_factored)
 
 cpdef tuple initialization(number_to_be_factored, smooth_boundary):
     """
@@ -47,10 +46,11 @@ cpdef tuple initialization(number_to_be_factored, smooth_boundary):
     if smooth_boundary == 0:
         smooth_boundary = int(ceil(
             sqrt(exp(sqrt(log(n) * log(log(n)))))))  # The value of the smooth boundary B is √(e^(√(ln(n)ln(ln(n))))
-    logger.debug(smooth_boundary)
+    logger.debug(f"The smooth boundary is {smooth_boundary}")
     factor_base = generate_factor_base(number_to_be_factored, smooth_boundary)
-    square_roots = get_square_roots(number_to_be_factored, smooth_boundary, factor_base)
-    cpdef int sieve_length = smooth_boundary ** 3
+    square_roots = get_square_roots(number_to_be_factored, factor_base)
+    logger.info(smooth_boundary)
+    cpdef long sieve_length = smooth_boundary * 3
     return smooth_boundary, square_roots, factor_base, sieve_length
 
 cpdef tuple sieving(smooth_boundary, number_to_be_factored, square_roots, sieve_length, factor_base_length):
@@ -100,13 +100,58 @@ cpdef tuple sieving(smooth_boundary, number_to_be_factored, square_roots, sieve_
 
     return smooth_numbers, smooth_sequence_factorization
 
-cpdef linear_algebra(smooth_numbers, smooth_sequence_factorization):
+cpdef linear_algebra(smooth_numbers, smooth_sequence_factorization, factor_base):
     """
+    Solves the gauss elimination of a matrix with rows being the exponent vectors reduced mod 2 and 
+    returns the set of rows that are dependent
+    """
+    matrix = create_matrix(smooth_numbers, factor_base)
+        rows = len(matrix)
+    columns = len(matrix[0])
+    rows_marked = [False for r in range(rows)]
+
+    for c in range(columns):
+        for r in range(rows):
+            if matrix[r][c] == 1:
+                rows_marked[r] = True
+                for k in range(columns):
+                    if matrix[r][k] == 1 and k != c:
+                        for i in range(rows):
+                            matrix[i][k] = (matrix[i][k] + matrix[i][c]) % 2
+                break
+
+    dependent_rows = []
+    for row, bool_val in enumerate(rows_marked):
+        if bool_val == False:
+            dependent_rows_set = {row}
+            for col in range(columns):
+                if matrix[row][col] == 1:
+                    for r in range(rows):
+                        if matrix[r][col] == 1 and r != row and rows_marked[r] == True:
+                            dependent_rows_set.add(r)
+            dependent_rows.append(dependent_rows_set)
+    return dependent_rows
+
+cpdef create_matrix(smooth_numbers, factor_base):
+    """
+    Creates and returns a matrix from the prime factorization of the smooth values with
+    every row being the exponent vector reduced mod 2
+    """
+    K = len(smooth_numbers) - 1
+    matrix = []
     
-    :param smooth_numbers: 
-    :param smooth_sequence_factorization: 
-    :return: 
-    """
+    for n in smooth_numbers:
+        exp_vector = []
+        factors = factor(n, factor_base)
+        for prime in factor_base:
+            if n % prime == 0:
+                count = factors.count(prime)
+                exp_vector.append(count % 2) 
+            else:
+                exp_vector.append(0)
+        matrix.append(exp_vector)
+        
+    return matrix
 
 cpdef legendre(num, p):
     """
@@ -153,12 +198,11 @@ cpdef list generate_factor_base(number_to_be_factored, bound):
     return [prime for prime in range(2, bound) if
             prime_flag[prime] == True and legendre(number_to_be_factored, prime) == 1]
 
-cpdef list get_square_roots(number_to_be_factored, smooth_bound, factor_base):
+cpdef list get_square_roots(number_to_be_factored, factor_base):
     """
     Get the two roots of a where a^2 ≡ n(mod prime)
 
     :param number_to_be_factored: The number that will be factored
-    :param smooth_bound: The B smooth bound
     :param factor_base: A list with the primes up to number_to_be_factored
     :return: A list of roots 
     """
@@ -169,15 +213,15 @@ cpdef list get_square_roots(number_to_be_factored, smooth_bound, factor_base):
     logger.info("========SQUARE ROOTS FOUND========")
     return roots
 
-cpdef list[tuple] square_root_modulo_prime(num, prime):
+cpdef list[tuple] square_root_modulo_prime(number_to_be_factored, prime):
     """
     Given an odd prime and an integer n with (n/p) = 1, this algorithm returns a solution a to a^2 ≡ n (mod prime).
     
-    :param num: The number that is being factored
+    :param number_to_be_factored: The number that is being factored
     :param prime: A prime number, part of the prime base
     :return: The negative and positive solutions of a^2 ≡ n (mod prime) and the prime in a list of tuples
     """
-    cdef mpz n = mpz(num % prime)
+    cdef mpz n = mpz(number_to_be_factored % prime)
     if is_congruent(prime, 3, 8) | is_congruent(prime, 7, 8):
         x = powmod(n, (prime + 1) // 4, prime)
         return [(x, prime), (prime - x % prime, prime)]
@@ -190,6 +234,7 @@ cpdef list[tuple] square_root_modulo_prime(num, prime):
     else:  # is_congruent(prime, 1, 8)
         while True:
             d = randint(2, prime - 1)
+            logger.info(f"d is {d}")
             if legendre(d, prime) == -1:
                 break
         s, t = represent_as_power_of_two(prime - 1)
