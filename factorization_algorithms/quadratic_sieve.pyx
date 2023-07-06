@@ -1,13 +1,13 @@
 #cython: language_level=3
 import logging
-from math import ceil
+from math import ceil, gcd
 from random import randint
 from gmpy2 cimport *
 from gmpy2 import mpz, is_prime, sqrt, exp, log, is_congruent, powmod
-
 from exceptions.exceptions import InvalidInput
 
 logger = logging.getLogger("app")
+
 
 cpdef list get_quadratic_sieve_factorization(number_to_be_factored: int):
     if number_to_be_factored % 2 == 0 or is_prime(number_to_be_factored):
@@ -23,15 +23,25 @@ cpdef list get_quadratic_sieve_factorization(number_to_be_factored: int):
         logger.info("1.PERFORMING INITIALIZATION")
         smooth_boundary, square_roots, factor_base, sieve_length = initialization(number_to_be_factored, smooth_boundary)
         logger.info("2.PERFORMING SIEVING")
-        smooth_numbers, smooth_sequence_factorization = sieving(smooth_boundary, number_to_be_factored, square_roots,
+        smooth_numbers, smooth_sequence, factorized_smooth_sequence = sieving(smooth_boundary, number_to_be_factored, square_roots,
                                                                 sieve_length, len(factor_base))
         smooth_numbers_found = len(smooth_numbers)
         required_smooth_numbers = len(factor_base) + 1
         smooth_boundary *= 4
-        logger.debug(f"Found smooth numbers,{smooth_numbers} and smooth sequence factorization {smooth_sequence_factorization}")
+        logger.debug(f"Found smooth numbers,{smooth_numbers} and smooth sequence factorization {factorized_smooth_sequence}")
     logger.info("3.PERFORMING LINEAR ALGEBRA")
-    dependent_rows = linear_algebra(smooth_numbers, smooth_sequence_factorization, factor_base)
-    factorize(dependente_rows, smooth_numbers, smooth_sequence, number_to_be_factored)
+    dependent_rows = linear_algebra(smooth_numbers, factorized_smooth_sequence, factor_base)
+    if dependent_rows != []:
+        for row_set in dependent_rows:
+            factor = factorize(row_set, smooth_numbers, smooth_sequence, number_to_be_factored)
+            print(factor)
+            if factor == 1 or factor == 0 or factor == number_to_be_factored:
+                logger.info("Factoring resulted in trivial solution, trying a different combination of rows.")
+                pass
+            else:
+                return [factor, number_to_be_factored//factor]
+    logger.info("No set of linearly dependent rows was found.")
+
 
 cpdef tuple initialization(number_to_be_factored, smooth_boundary):
     """
@@ -53,6 +63,7 @@ cpdef tuple initialization(number_to_be_factored, smooth_boundary):
     cpdef long sieve_length = smooth_boundary * 3
     return smooth_boundary, square_roots, factor_base, sieve_length
 
+
 cpdef tuple sieving(smooth_boundary, number_to_be_factored, square_roots, sieve_length, factor_base_length):
     """
     Sieves the sequence x^2-n for B-smooth values
@@ -68,10 +79,12 @@ cpdef tuple sieving(smooth_boundary, number_to_be_factored, square_roots, sieve_
     cpdef int smooth_numbers_found = 0
     sieve_sequence = [x * x - number_to_be_factored for x in
                       range(initial_sieve_point, initial_sieve_point + sieve_length)]
+    original_sieve_sequence = sieve_sequence.copy()
     sieve_numbers = [x for x in range(initial_sieve_point, initial_sieve_point + sieve_length)]
     prime_factorization = [[] for _ in range(initial_sieve_point, initial_sieve_point + sieve_length)]
-    smooth_sequence_factorization = []  # The numbers x^2-n that are B-smooth
     smooth_numbers = []  # Numbers x such that x^2-n is B-smooth
+    smooth_sequence = [] # The sequence of numbers x^2-n that are B-smooth
+    factorized_smooth_sequence = []  # The numbers x^2-n that are B-smooth factored by the factor base
 
     # Since we increase the sieve sequence by 1 the result will alternate with an even and odd number
     # So we need to find the first even number and then iterate by 2 through the list to sieve for prime=2
@@ -91,22 +104,24 @@ cpdef tuple sieving(smooth_boundary, number_to_be_factored, square_roots, sieve_
                 prime_factorization[i].append(factor)
 
     for i in range(sieve_length):
-        if sieve_sequence[i] == 1:
+        if sieve_sequence[i] == 1 and prime_factorization[i] != []:
             smooth_numbers.append(sieve_numbers[i])
-            smooth_sequence_factorization.append(prime_factorization[i])
+            factorized_smooth_sequence.append(prime_factorization[i])
+            smooth_sequence.append(original_sieve_sequence[i])
             smooth_numbers_found += 1
         if smooth_numbers_found == factor_base_length + 1:
             break
 
-    return smooth_numbers, smooth_sequence_factorization
+    return smooth_numbers, smooth_sequence, factorized_smooth_sequence
 
-cpdef linear_algebra(smooth_numbers, smooth_sequence_factorization, factor_base):
+
+cpdef linear_algebra(smooth_sequence, factorized_smooth_sequence, factor_base):
     """
     Solves the gauss elimination of a matrix with rows being the exponent vectors reduced mod 2 and 
     returns the set of rows that are dependent
     """
-    matrix = create_matrix(smooth_numbers, factor_base)
-        rows = len(matrix)
+    matrix = create_matrix(smooth_sequence, factorized_smooth_sequence, factor_base)
+    rows = len(matrix)
     columns = len(matrix[0])
     rows_marked = [False for r in range(rows)]
 
@@ -132,26 +147,23 @@ cpdef linear_algebra(smooth_numbers, smooth_sequence_factorization, factor_base)
             dependent_rows.append(dependent_rows_set)
     return dependent_rows
 
-cpdef create_matrix(smooth_numbers, factor_base):
+
+cpdef create_matrix(smooth_sequence, factorized_smooth_sequence, factor_base):
     """
     Creates and returns a matrix from the prime factorization of the smooth values with
     every row being the exponent vector reduced mod 2
     """
-    K = len(smooth_numbers) - 1
     matrix = []
     
-    for n in smooth_numbers:
+    for i in range(len(smooth_sequence)):
         exp_vector = []
-        factors = factor(n, factor_base)
-        for prime in factor_base:
-            if n % prime == 0:
-                count = factors.count(prime)
-                exp_vector.append(count % 2) 
-            else:
-                exp_vector.append(0)
+        for factor in factor_base:
+            count = factorized_smooth_sequence[i].count(factor)
+            exp_vector.append(count % 2) 
         matrix.append(exp_vector)
         
     return matrix
+
 
 cpdef legendre(num, p):
     """
@@ -180,6 +192,7 @@ cpdef legendre(num, p):
         return t
     return 0
 
+
 cpdef list generate_factor_base(number_to_be_factored, bound):
     """
     Perform the sieve of eratosthenes up to the bound and return all the primes for which the legendre value is 1
@@ -198,6 +211,7 @@ cpdef list generate_factor_base(number_to_be_factored, bound):
     return [prime for prime in range(2, bound) if
             prime_flag[prime] == True and legendre(number_to_be_factored, prime) == 1]
 
+
 cpdef list get_square_roots(number_to_be_factored, factor_base):
     """
     Get the two roots of a where a^2 ≡ n(mod prime)
@@ -212,6 +226,7 @@ cpdef list get_square_roots(number_to_be_factored, factor_base):
             roots.append(root)
     logger.info("========SQUARE ROOTS FOUND========")
     return roots
+
 
 cpdef list[tuple] square_root_modulo_prime(number_to_be_factored, prime):
     """
@@ -234,7 +249,6 @@ cpdef list[tuple] square_root_modulo_prime(number_to_be_factored, prime):
     else:  # is_congruent(prime, 1, 8)
         while True:
             d = randint(2, prime - 1)
-            logger.info(f"d is {d}")
             if legendre(d, prime) == -1:
                 break
         s, t = represent_as_power_of_two(prime - 1)
@@ -246,6 +260,30 @@ cpdef list[tuple] square_root_modulo_prime(number_to_be_factored, prime):
                 m += pow(2, i)
         x = pow(mpz(n), mpz((t + 1) // 2)) * pow(mpz(d), mpz(m // 2)) % prime
         return [(x, prime), (prime - x % prime, prime)]
+
+
+cpdef int factorize(row_set, smooth_numbers, smooth_sequence, number_to_be_factored):
+    """
+    Calculates the factorization using gcd from the linear dependent rows found from the linear algebra step
+    
+    :param row_set: The set of rows that are linearly dependent
+    :param smooth_numbers: The smooth numbers found from the sieving
+    :param smooth_sequence: The value of the sequence of the smooth numbers
+    :param number_to_be_factored: The number that is being factored
+    :return: A factor of the number that is being factored or 1
+    """
+    cdef mpz y = mpz(1)
+    cdef mpz x = mpz(1)
+    for i in row_set:
+        y *= smooth_numbers[i]
+        x *= smooth_sequence[i]
+    x = x % number_to_be_factored
+    y = mpz(ceil(sqrt(y)))
+    y = y % number_to_be_factored
+    
+    factor = gcd(x - y, number_to_be_factored)
+    return factor
+
 
 cpdef represent_as_power_of_two(n):
     """
