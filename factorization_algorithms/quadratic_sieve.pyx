@@ -30,6 +30,8 @@ cpdef list get_quadratic_sieve_factorization(number_to_be_factored: int):
         required_smooth_numbers = len(factor_base) + 1
         smooth_boundary *= 4
         logger.debug(f"Found smooth numbers,{smooth_numbers} and smooth sequence factorization {factorized_smooth_sequence}")
+    sieving_time = time.time()
+    logger.debug(f"The steps up to sieving ran for {sieving_time-start_time} seconds.")
     logger.info("3.PERFORMING LINEAR ALGEBRA")
     dependent_rows = linear_algebra(smooth_numbers, factorized_smooth_sequence, factor_base)
     for row_set in dependent_rows:
