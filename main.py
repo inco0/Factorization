@@ -5,6 +5,7 @@ from factorization_algorithms.fermat_square_difference import get_fermat_factori
 from factorization_algorithms.pollard_rho import get_pollard_rho_factorization
 from factorization_algorithms.quadratic_sieve import get_quadratic_sieve_factorization
 from enum import Enum
+import time
 import logging
 
 
@@ -40,11 +41,17 @@ def pollard_rho(n: int):
 
 
 def quadratic_sieve(n: int):
+    start = time.time()
     factors = get_quadratic_sieve_factorization(n)
+    end = time.time()
+    logger.debug(f"Quadratic sieve ran for {end-start} seconds.")
     print_factors(n, factors)
 
 
 def print_factors(number_to_be_factored: int, factors: list):
+    if factors == []:
+        print(f"The factorization has not returned a result.")
+        return
     print(f"The factors of {number_to_be_factored} are:", end = " ")
     for factor in factors:
         print(factor, end = " ")
@@ -54,7 +61,7 @@ def setup_logger():
     logger = logging.getLogger("app")
     logging.basicConfig(format="%(message)s")
     logging.basicConfig()
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
 
 def read_input() -> tuple:
@@ -86,6 +93,7 @@ def perform_factorization(number_to_be_factored, algorithm):
 
 if __name__ == "__main__":
     setup_logger()
+    logger = logging.getLogger("app")
     try:
         number_to_be_factored, algorithm = read_input()
         perform_factorization(number_to_be_factored, algorithm)

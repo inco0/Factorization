@@ -31,16 +31,15 @@ cpdef list get_quadratic_sieve_factorization(number_to_be_factored: int):
         logger.debug(f"Found smooth numbers,{smooth_numbers} and smooth sequence factorization {factorized_smooth_sequence}")
     logger.info("3.PERFORMING LINEAR ALGEBRA")
     dependent_rows = linear_algebra(smooth_numbers, factorized_smooth_sequence, factor_base)
-    if dependent_rows != []:
-        for row_set in dependent_rows:
-            factor = factorize(row_set, smooth_numbers, smooth_sequence, number_to_be_factored)
-            print(factor)
-            if factor == 1 or factor == 0 or factor == number_to_be_factored:
-                logger.info("Factoring resulted in trivial solution, trying a different combination of rows.")
-                pass
-            else:
-                return [factor, number_to_be_factored//factor]
+    for row_set in dependent_rows:
+        factor = factorize(row_set, smooth_numbers, smooth_sequence, number_to_be_factored)
+        if factor == 1 or factor == 0 or factor == number_to_be_factored:
+            logger.info("Factoring resulted in trivial solution, trying a different combination of rows.")
+            pass
+        else:
+            return [factor, number_to_be_factored//factor]
     logger.info("No set of linearly dependent rows was found.")
+    return []
 
 
 cpdef tuple initialization(number_to_be_factored, smooth_boundary):
@@ -59,7 +58,6 @@ cpdef tuple initialization(number_to_be_factored, smooth_boundary):
     logger.debug(f"The smooth boundary is {smooth_boundary}")
     factor_base = generate_factor_base(number_to_be_factored, smooth_boundary)
     square_roots = get_square_roots(number_to_be_factored, factor_base)
-    logger.info(smooth_boundary)
     cpdef long sieve_length = smooth_boundary * 3
     return smooth_boundary, square_roots, factor_base, sieve_length
 
@@ -124,7 +122,6 @@ cpdef linear_algebra(smooth_sequence, factorized_smooth_sequence, factor_base):
     rows = len(matrix)
     columns = len(matrix[0])
     rows_marked = [False for r in range(rows)]
-
     for c in range(columns):
         for r in range(rows):
             if matrix[r][c] == 1:
@@ -154,7 +151,6 @@ cpdef create_matrix(smooth_sequence, factorized_smooth_sequence, factor_base):
     every row being the exponent vector reduced mod 2
     """
     matrix = []
-    
     for i in range(len(smooth_sequence)):
         exp_vector = []
         for factor in factor_base:
