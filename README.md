@@ -1,5 +1,5 @@
 # Factorization
-- A repository of factorization algorithms implemented in Cython
+- A repository of various factorization algorithms implemented in Cython
 
 # How to run
 - Create a python virtual environment
