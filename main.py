@@ -18,25 +18,30 @@ class Algorithms(Enum):
 
 
 def trial_division(n: int):
+    start_time = time.time()
     factors: list = get_trial_division_factorization(n)
-    result = 1
+    logger.debug(f"Trial division ran for {time.time()-start_time} seconds.")
     print_factors(n, factors)
 
 
 def fermat(n: int):
+    start_time = time.time()
     factors: list = get_fermat_factorization(n)
-    result = 1
+    logger.debug(f"Fermat's algorithm ran for {time.time()-start_time} seconds.")
     print_factors(n, factors)
 
 
 def hart(n: int):
-    factors: list = get_hart_factorization(n, 10000)
-    result = 1
+    start_time = time.time()
+    factors: list = get_hart_factorization(n, 10000000000)
+    logger.debug(f"Hart's algorithm ran for {time.time()-start_time} seconds.")
     print_factors(n, factors)
     
 
 def pollard_rho(n: int):
+    start_time = time.time()
     factors = get_pollard_rho_factorization(n)
+    logger.debug(f"Pollard Rho's algorithm ran for {time.time()-start_time} seconds.")
     print_factors(n, factors)
 
 

@@ -10,6 +10,7 @@ cpdef list get_fermat_factorization(n: int):
     cdef mpz t = mpz(2*first_factor + 1)
     cdef mpz r_root = mpz(sqrt(abs(r)))
     while r_root*r_root != r:
+        print(r)
         r += t
         t += 2
         r_root = mpz(int(sqrt(abs(r))))
