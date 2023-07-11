@@ -5,7 +5,7 @@ from random import randint
 from gmpy2 cimport *
 from gmpy2 import mpz, is_prime, sqrt, exp, log, is_congruent, powmod
 from exceptions.exceptions import InvalidInput
-
+import time
 logger = logging.getLogger("app")
 
 
@@ -19,6 +19,7 @@ cpdef list get_quadratic_sieve_factorization(number_to_be_factored: int):
     cpdef int smooth_boundary = 0
 
     while smooth_numbers_found < required_smooth_numbers:
+        start_time = time.time()
         logger.info("\n=======================BEGINNING FACTORIZATION=======================\n")
         logger.info("1.PERFORMING INITIALIZATION")
         smooth_boundary, square_roots, factor_base, sieve_length = initialization(number_to_be_factored, smooth_boundary)
@@ -34,9 +35,10 @@ cpdef list get_quadratic_sieve_factorization(number_to_be_factored: int):
     for row_set in dependent_rows:
         factor = factorize(row_set, smooth_numbers, smooth_sequence, number_to_be_factored)
         if factor == 1 or factor == 0 or factor == number_to_be_factored:
-            logger.info("Factoring resulted in trivial solution, trying a different combination of rows.")
+            logger.debug("Factoring resulted in trivial solution, trying a different combination of rows.")
             pass
         else:
+            logger.debug(f"Quadratic sieve ran for {time.time()-start_time} seconds.")
             return [factor, number_to_be_factored//factor]
     logger.info("No set of linearly dependent rows was found.")
     return []

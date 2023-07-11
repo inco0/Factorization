@@ -41,10 +41,7 @@ def pollard_rho(n: int):
 
 
 def quadratic_sieve(n: int):
-    start = time.time()
     factors = get_quadratic_sieve_factorization(n)
-    end = time.time()
-    logger.debug(f"Quadratic sieve ran for {end-start} seconds.")
     print_factors(n, factors)
 
 
